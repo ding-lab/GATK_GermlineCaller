@@ -1,2 +1,2 @@
-IMAGE="mwyczalkowski/varscan_vcf_remap:20191228"
+IMAGE="mwyczalkowski/GATK_GermlineCaller"
 docker push $IMAGE
