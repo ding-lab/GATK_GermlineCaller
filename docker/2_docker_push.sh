@@ -1,2 +1,2 @@
-IMAGE="mwyczalkowski/GATK_GermlineCaller"
+source docker_image.sh
 docker push $IMAGE

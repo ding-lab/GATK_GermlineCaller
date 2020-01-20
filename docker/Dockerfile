@@ -1,16 +1,12 @@
-FROM python:3
+# https://hub.docker.com/r/broadinstitute/gatk
+FROM broadinstitute/gatk
+MAINTAINER Matthew Wyczalkowski <m.wyczalkowski@wustl.edu>
 
 WORKDIR /opt
 
-# newer versions of pysam seem to crash on build.
-# alternative is to start with Bioconductor images, e.g., https://quay.io/repository/biocontainers/pysam?tab=info
-RUN pip install PyVCF argparse pysam==0.15.1
-#RUN pip install argparse
-#pip install Cython
-#RUN pip install pysam
-#pip install pysam==0.15.1
-
 RUN apt-get update && apt-get install -y \
-    vim
+    git \
+    parallel \
+    vim-tiny
 
-COPY . /opt/varscan_vcf_remap
+COPY . /opt/GATK_GermlineCaller
