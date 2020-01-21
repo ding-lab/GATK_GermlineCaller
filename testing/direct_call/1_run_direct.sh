@@ -5,5 +5,6 @@ REF="/opt/GATK_GermlineCaller/testing/demo_data/Homo_sapiens_assembly19.COST1601
 
 PROCESS="/opt/GATK_GermlineCaller/src/process_sample_parallel.sh"
 
+
 bash $PROCESS $@ $REF $BAM 
 
