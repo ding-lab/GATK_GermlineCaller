@@ -50,6 +50,7 @@ NJOBS=4
 DO_PARALLEL=0
 OUTD="./output"
 PROCESS="/opt/GATK_GermlineCaller/src/process_sample.sh"
+BCFTOOLS="/opt/miniconda/bin/bcftools"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":hd1c:j:o:C:R:S:" opt; do
@@ -186,13 +187,13 @@ if [ "$CHRLIST" != "Final" ]; then
     # First merge the snp
     IN_SNP=`ls $OUTD/GATK.snp.*.vcf`
     OUT_SNP="$OUTD/GATK.snp.Final.vcf"
-    CMD="bcftools concat -o $OUT_SNP $IN_SNP"
+    CMD="$BCFTOOLS concat -o $OUT_SNP $IN_SNP"
     run_cmd "$CMD" $DRYRUN
 
     # then merge the indel
     IN_INDEL=`ls $OUTD/GATK.indel.*.vcf`
     OUT_INDEL="$OUTD/GATK.indel.Final.vcf"
-    CMD="bcftools concat -o $OUT_SNP $IN_SNP"
+    CMD="$BCFTOOLS concat -o $OUT_SNP $IN_SNP"
     run_cmd "$CMD" $DRYRUN
 fi
 
