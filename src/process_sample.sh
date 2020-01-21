@@ -22,18 +22,6 @@ Output filenames:
 where XXX is given by INTERVAL_LABEL
 EOF
 
-# Commands - templates:
-# from germline_variant_snakemake:
-#   gatk HaplotypeCaller -R {input.genome_fa} -I {input.bam} -L {input.interval} -O {output} --standard-min-confidence-threshold-for-calling 30.0
-#   gatk SelectVariants -R {input.genome_fa} -V {input.input_vcf} -O {output} -select-type SNP -select-type MNP 
-#   gatk SelectVariants -R {input.genome_fa} -V {input.input_vcf} -O {output} -select-type INDEL
-#   bcftools concat -o   -- this does not take place here
-# 
-# From germlinewrapper:
-#   gatk HaplotypeCaller  -I ${NBAM} -O ${rawvcf} -R $h38_REF -L $chr1 -RF NotDuplicateReadFilter -RF MappingQualityReadFilter -RF MappedReadFilter
-#   gatk SelectVariants -R $h38_REF -V ${gvipvcf} -O ${snvvcf} -select-type SNP -select-type MNP
-#   gatk SelectVariants -R $h38_REF -V ${gvipvcf} -O ${indelvcf} -select-type INDEL
-
 # HaplotypeCaller documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360037225632-HaplotypeCaller
 # SelectVariants documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360037225432-SelectVariants
 
@@ -126,9 +114,10 @@ run_cmd "$CMD1" $DRYRUN
 OUT2A="$OUTD/GATK.snp.${IX}.vcf"
 OUT2B="$OUTD/GATK.indel.${IX}.vcf"
 CMD2A="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type SNP -select-type MNP $SV_SNP_ARGS"
-CMD2B="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type INDEL $SV_INDEL_ARGS"
+CMD2B="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2B -select-type INDEL $SV_INDEL_ARGS"
 run_cmd "$CMD2A" $DRYRUN
 run_cmd "$CMD2B" $DRYRUN
 
->&2 echo Written to $CMD2A and $CMD2B
 >&2 echo $SCRIPT success.
+>&2 echo Written SNP to $OUT2A 
+>&2 echo Written INDEL to $OUT2B

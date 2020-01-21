@@ -8,5 +8,5 @@ PROCESS="/opt/GATK_GermlineCaller/src/process_sample_parallel.sh"
 OUTD="output.parallel"
 CHRLIST="chrlist.dat"
 
-bash $PROCESS $@ -c $CHRLIST  -o $OUTD $REF $BAM 
+bash $PROCESS "$@" -c $CHRLIST  -o $OUTD $REF $BAM 
 
