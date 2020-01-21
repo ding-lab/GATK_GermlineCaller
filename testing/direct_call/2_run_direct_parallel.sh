@@ -6,7 +6,7 @@ REF="/opt/GATK_GermlineCaller/testing/demo_data/Homo_sapiens_assembly19.COST1601
 PROCESS="/opt/GATK_GermlineCaller/src/process_sample_parallel.sh"
 
 OUTD="output.parallel"
-CHRLIST="chrlist.dat"
+CHRLIST="../demo_data/chrlist.dat"
 
 bash $PROCESS "$@" -c $CHRLIST  -o $OUTD $REF $BAM 
 
