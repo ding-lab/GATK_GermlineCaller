@@ -10,5 +10,6 @@ RUN apt-get update && apt-get install -y \
     vim-tiny
 
 RUN conda install -c bioconda bcftools
+RUN printf 'will cite\n' | parallel --citation
 
 COPY . /opt/GATK_GermlineCaller
