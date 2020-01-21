@@ -154,9 +154,9 @@ for CHR in $CHRLIST; do
 
     # core call to process_sample.sh
     if [ $CHR == "Final" ]; then
-        CMD="$PROCESS $PS_ARGS -o $OUTD -l Final $REF $BAM "
+        CMD="$PROCESS $PS_ARGS -o $OUTD -l Final $REF $BAM > $STDOUT_FN 2> $STDERR_FN"
     else
-        CMD="$PROCESS $PS_ARGS -o $OUTD -L $CHR $REF $BAM "
+        CMD="$PROCESS $PS_ARGS -o $OUTD -L $CHR $REF $BAM > $STDOUT_FN 2> $STDERR_FN"
     fi
 
     if [ $DO_PARALLEL == 1 ]; then
@@ -166,7 +166,7 @@ for CHR in $CHRLIST; do
     fi
 
     run_cmd "$CMD" $DRYRUN
-    >&2 echo Written to $STDOUT_FN
+    >&2 echo Written to $STDOUT_FN and $STDERR_FN
 
     if [ $JUSTONE ]; then
         >&2 echo Exiting after one
