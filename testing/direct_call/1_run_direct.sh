@@ -1,9 +1,9 @@
 # Example command to run within docker.  Typically, start docker first with 0_start_docker.sh
 
-VCF="/data/varscan_snv_vcf.vcf"
-mkdir -p /data/out
-OUT="/data/out/varscan_snv_vcf-remapped.vcf"
+BAM="/opt/GATK_GermlineCaller/testing/demo_data/HCC1954.NORMAL.30x.compare.COST16011_region.bam"
+REF="/opt/GATK_GermlineCaller/testing/demo_data/Homo_sapiens_assembly19.COST16011_region.fa"
 
-python /opt/varscan_vcf_remap/src/varscan_vcf_remap.py $@ --input $VCF --output $OUT
+PROCESS="/opt/GATK_GermlineCaller/src/process_sample_parallel.sh"
 
-echo Written to $OUT
+bash $PROCESS $@ $BAM $REF
+

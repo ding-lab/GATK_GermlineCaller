@@ -37,7 +37,7 @@ Parallel mode can be disabled with -j 0.
 
 EOF
 
-source utils.sh
+source /opt/GATK_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
 # Background on `parallel` and details about blocking / semaphores here:
@@ -112,7 +112,7 @@ BAM=$2;   confirm $BAM
 # but can be other regions as well
 if [ $CHRLIST_FN ]; then
     confirm $CHRLIST_FN
-    CHRLIST=$(cat $CASES_FN)
+    CHRLIST=$(cat $CHRLIST_FN)
     # Will need to merge multiple VCFs
 else
     # Will not need to merge multiple VCFs
@@ -133,7 +133,7 @@ if [ $NJOBS == "0" ]; then
     DO_PARALLEL=0
 fi
 
-if [ $DO_PARALLEL ]; then
+if [ $DO_PARALLEL == 1 ]; then
     >&2 echo [ $NOW ]: Parallel run of uniquely mapped reads
     >&2 echo . 	  Looping over $CHRLIST
     >&2 echo . 	  Parallel jobs: $NJOBS
@@ -141,7 +141,6 @@ if [ $DO_PARALLEL ]; then
 else
     >&2 echo [ $NOW ]: Single region at a time
     >&2 echo . 	  Looping over $CHRLIST
-    >&2 echo . 	  Parallel jobs: $NJOBS
     >&2 echo . 	  Log files: $LOGD
 fi
 
@@ -159,7 +158,7 @@ for CHR in $CHRLIST; do
         CMD="$PROCESS $PS_ARGS -o $OUTD -L $CHR $REF $BAM "
     fi
 
-    if [ $DO_PARALLEL ]; then
+    if [ $DO_PARALLEL == 1 ]; then
         JOBLOG="$LOGD/GATK_GermlineCaller.$CHR.log"
         CMD=$(echo "$CMD" | sed 's/"/\\"/g' )   # This will escape the quotes in $CMD
         CMD="parallel --semaphore -j$NJOBS --id $MYID --joblog $JOBLOG --tmpdir $LOGD \"$CMD\" "
@@ -174,7 +173,7 @@ for CHR in $CHRLIST; do
     fi
 done
 
-if [ $DO_PARALLEL ]; then
+if [ $DO_PARALLEL == 1 ]; then
     # this will wait until all jobs completed
     CMD="parallel --semaphore --wait --id $MYID"
     run_cmd "$CMD" $DRYRUN
@@ -182,19 +181,19 @@ fi
 
 # Now merge, provided CHRLIST is not "Final", i.e., we are looping over regions in CHRLIST
 # Merged output will have same filename as if CHR were "Final"
-if [ $CHRLIST != "Final" ]; then
+if [ "$CHRLIST" != "Final" ]; then
 
     # First merge the snp
     IN_SNP=`ls $OUTD/GATK.snp.*.vcf`
     OUT_SNP="$OUTD/GATK.snp.Final.vcf"
     CMD="bcftools concat -o $OUT_SNP $IN_SNP"
-    run_cmd "$CMD"
+    run_cmd "$CMD" $DRYRUN
 
     # then merge the indel
     IN_INDEL=`ls $OUTD/GATK.indel.*.vcf`
     OUT_INDEL="$OUTD/GATK.indel.Final.vcf"
     CMD="bcftools concat -o $OUT_SNP $IN_SNP"
-    run_cmd "$CMD"
+    run_cmd "$CMD" $DRYRUN
 fi
 
 NOW=$(date)

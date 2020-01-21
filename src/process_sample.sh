@@ -37,7 +37,7 @@ EOF
 # HaplotypeCaller documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360037225632-HaplotypeCaller
 # SelectVariants documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360037225432-SelectVariants
 
-source utils.sh
+source /opt/GATK_GermlineCaller/src/utils.sh
 SCRIPT=$(basename $0)
 
 GATK="/gatk/gatk"
@@ -120,15 +120,15 @@ test_exit_status
 # Run HaplotypeCaller
 OUT1="$OUTD/GATK.raw.${IX}.vcf"
 CMD1="$GATK HaplotypeCaller -R $REF -I $BAM -O $OUT1 $HC_ARGS"
-run_cmd $CMD1
+run_cmd "$CMD1" $DRYRUN
 
 # Run SelectVariants
 OUT2A="$OUTD/GATK.snp.${IX}.vcf"
 OUT2B="$OUTD/GATK.indel.${IX}.vcf"
-CMD1A="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type SNP -select-type MNP $SV_SNP_ARGS"
-CMD1B="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type INDEL $SV_INDEL_ARGS"
-run_cmd $CMD2A
-run_cmd $CMD2B
+CMD2A="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type SNP -select-type MNP $SV_SNP_ARGS"
+CMD2B="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type INDEL $SV_INDEL_ARGS"
+run_cmd "$CMD2A" $DRYRUN
+run_cmd "$CMD2B" $DRYRUN
 
 >&2 echo Written to $CMD2A and $CMD2B
 >&2 echo $SCRIPT success.

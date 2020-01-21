@@ -30,7 +30,8 @@ function confirm {
 #     CMD="tabix -p vcf $OUT"
 #     run_cmd "$CMD"
 function run_cmd {
-    CMD=$@
+    CMD=$1
+    DRYRUN=$2
 
     NOW=$(date)
     if [ "$DRYRUN" ]; then
