@@ -1,3 +1,4 @@
-Test varscan VCFs copied from /gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/adhoc-test/20191226.heiman/dat
-Note that these have calls in just the first 2 chromosomes
+Test data from manta distribution: https://github.com/Illumina/manta/tree/master/src/demo/data
 
+Please uncompress reference with,
+	tar -xvjf Homo_sapiens_assembly19.COST16011_region.fa.tar.bz2
