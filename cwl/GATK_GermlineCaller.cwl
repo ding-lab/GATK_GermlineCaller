@@ -25,6 +25,24 @@ inputs:
       prefix: '-d'
     label: dry run
     doc: 'Print out commands but do not execute, for testing only'
+  - id: HC_ARGS
+    type: string?
+    inputBinding:
+      position: 0
+      prefix: '-C'
+    label: GATK HaplotypeCaller arguments
+  - id: SV_SNP_ARGS
+    type: string?
+    inputBinding:
+      position: 0
+      prefix: '-R'
+    label: SelectVariants SNP arguments
+  - id: SV_INDEL_ARGS
+    type: string?
+    inputBinding:
+      position: 0
+      prefix: '-S'
+    label: SelectVariants INDEL arguments
 outputs:
   - id: snp_vcf
     type: File?
@@ -39,5 +57,5 @@ requirements:
   - class: ResourceRequirement
     ramMin: 8000
   - class: DockerRequirement
-    dockerPull: 'mwyczalkowski/gatk_germlinecaller'
+    dockerPull: mwyczalkowski/gatk_germlinecaller
   - class: InlineJavascriptRequirement
