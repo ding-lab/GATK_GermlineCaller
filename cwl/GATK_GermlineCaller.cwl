@@ -5,19 +5,32 @@ baseCommand:
   - /bin/bash
   - /opt/GATK_GermlineCaller/src/process_sample_parallel.sh
 inputs:
-  - id: bam
-    type: File
-    inputBinding:
-      position: 1
-    label: Input BAM/CRAM
-    secondaryFiles: ${if (self.nameext === ".bam") {return self.basename + ".bai"} else {return self.basename + ".crai"}}
   - id: reference
     type: File
     inputBinding:
-      position: 2
+      position: 1
     label: Reference FASTA
     secondaryFiles:
       - .fai
+  - id: bam
+    type: File
+    inputBinding:
+      position: 2
+    label: Input BAM/CRAM
+    secondaryFiles: ${if (self.nameext === ".bam") {return self.basename + ".bai"} else {return self.basename + ".crai"}}
+  - id: chrlist
+    type: File?
+    inputBinding:
+      position: 0
+      prefix: '-c'
+    label: List of genomic regions
+  - id: njobs
+    type: int?
+    inputBinding:
+      position: 0
+      prefix: '-j'
+    label: Parallel job count
+    doc: 'Number of jobs to run in parallel mode'
   - id: dryrun
     type: boolean?
     inputBinding:
@@ -25,6 +38,13 @@ inputs:
       prefix: '-d'
     label: dry run
     doc: 'Print out commands but do not execute, for testing only'
+  - id: finalize
+    type: boolean?
+    inputBinding:
+      position: 0
+      prefix: '-F'
+    label: finalize
+    doc: 'Compress intermediate data and logs'
   - id: HC_ARGS
     type: string?
     inputBinding:

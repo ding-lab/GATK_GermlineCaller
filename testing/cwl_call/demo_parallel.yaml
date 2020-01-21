@@ -4,5 +4,8 @@ bam:
 reference:
   class: File
   path: ../demo_data/Homo_sapiens_assembly19.COST16011_region.fa
+chrlist:
+  class: File
+  path: ../demo_data/chrlist.dat
 HC_ARGS: "--standard-min-confidence-threshold-for-calling 30.0"
-dryrun: false
+finalize: true
