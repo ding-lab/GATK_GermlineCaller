@@ -4,6 +4,10 @@
 # Only one server should be running at once.  It should be run after `gsub` (after 0_start_docker.sh)
 # and should exit when the docker container exits
 
-/usr/bin/java -Dconfig.file=/gscuser/tmooney/server.cromwell.config -jar /opt/cromwell.jar server >/dev/null & 
+CONFIG="/home/m.wyczalkowski/lib/cromwell-jar/server.cromwell.config"
+CROMWELL="/usr/local/cromwell/cromwell-47.jar"
 
-export CROMWELL_URL=http://localhost:8000
+/usr/bin/java -Dconfig.file=$CONFIG -jar $CROMWELL server > /dev/null &
+
+#/usr/bin/java -Dconfig.file=/home/m.wyczalkowski/lib/cromwell-jar/cromwell.truststore -jar /usr/local/cromwell/cromwell-47.jar server >/dev/null & 
+

@@ -8,7 +8,7 @@ source /opt/ibm/lsfsuite/lsf/conf/lsf.conf
 
 ARGS="-Xmx10g"
 YAML="../demo.yaml"
-DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/storage1/fs1/home1/Active/home/m.wyczalkowski/lib/cromwell.truststore"
+DB_ARGS="-Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStore=/home/m.wyczalkowski/lib/cromwell-jar/cromwell.truststore"
 #CROMWELL_JAR="/opt/cromwell.jar"
 CROMWELL_JAR="/usr/local/cromwell/cromwell-47.jar"
 CWL="/opt/GATK_GermlineCaller/cwl/GATK_GermlineCaller.cwl"
