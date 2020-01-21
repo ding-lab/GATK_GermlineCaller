@@ -1,162 +1,134 @@
 #/bin/bash
-# Run Manta SV caller and filter
-# Usage: process_sample.sh [options] tumor.bam normal.bam reference.fa 
+
+read -r -d '' USAGE <<'EOF'
+Run GATK HaplotypeCaller and SelectVariants
+
+Usage: process_sample.sh [options] reference.fa input.bam 
+ 
+Options:
+-h: Print this help message
+-d : Dry run - output commands but do not execute them
+-C HC_ARGS : pass args to `gatk HaplotypeCaller`
+-R SV_SNP_ARGS : pass SV_SNP_ARGS to `gatk SelectVariants -select-type SNP -select-type MNP`
+-S SV_INDEL_ARGS : pass SV_INDEL_ARGS to `gatk SelectVariants -select-type INDEL`
+-L INPUT_INTERVAL : One or more genomic intervals over which to operate
+  This is passed verbatim to HaplotypeCaller -L INPUT_INTERVAL
+-l INTERVAL_LABEL : A short label for interval, used for filenames.  Default is INPUT_INTERVAL
+-o OUTD : Output directory [ ./output ]
+
+Output filenames:
+    OUTD/GATK.snp.XXX.vcf
+    OUTD/GATK.indel.XXX.vcf
+where XXX is given by INTERVAL_LABEL
+EOF
+
+# Commands - templates:
+# from germline_variant_snakemake:
+#   gatk HaplotypeCaller -R {input.genome_fa} -I {input.bam} -L {input.interval} -O {output} --standard-min-confidence-threshold-for-calling 30.0
+#   gatk SelectVariants -R {input.genome_fa} -V {input.input_vcf} -O {output} -select-type SNP -select-type MNP 
+#   gatk SelectVariants -R {input.genome_fa} -V {input.input_vcf} -O {output} -select-type INDEL
+#   bcftools concat -o   -- this does not take place here
 # 
-# Options [ defaults ]:
-# -v : verbose output
-# -d : Dry run - output commands but do not execute them
-# -o out_dir : Output directory [ ./output ]
-# -c cpu : CPU count [ 4 ]
-# -f output.vcf : specify output filename in manta results dir [ final.SV.WGS.vcf ]
-# -C CONFIG_ARGS : pass CONFIG_ARGS to configManta.py
-# -R RUN_ARGS : pass CONFIG_ARGS to runWorkflow.py
+# From germlinewrapper:
+#   gatk HaplotypeCaller  -I ${NBAM} -O ${rawvcf} -R $h38_REF -L $chr1 -RF NotDuplicateReadFilter -RF MappingQualityReadFilter -RF MappedReadFilter
+#   gatk SelectVariants -R $h38_REF -V ${gvipvcf} -O ${snvvcf} -select-type SNP -select-type MNP
+#   gatk SelectVariants -R $h38_REF -V ${gvipvcf} -O ${indelvcf} -select-type INDEL
 
-# Previously, -T option turned on the following arguments, 
-# useful for testing with COST16011 test dataset
-# Obtained from failed run of 
-#	python /opt/conda/share/manta-1.4.0-1/bin/runMantaWorkflowDemo.py
-# Test run succeeds without these args, but takes longer to run
-# TESTARGS=" --region=8:107652000-107655000 --region=11:94974000-94989000 --candidateBins=4 --exome "
-# Pass as, -X "$TESTARGS"
+# HaplotypeCaller documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360037225632-HaplotypeCaller
+# SelectVariants documentation: https://gatk.broadinstitute.org/hc/en-us/articles/360037225432-SelectVariants
 
+source utils.sh
+SCRIPT=$(basename $0)
 
-# In MGI environments, it is necessary to call python and find manta explicitly
-# /usr/bin/python /opt/conda/bin/configManta.py
-# This should generally work for the docker image
-PYTHON="/usr/bin/python"
-MANTAD="/opt/conda/bin"
-
-#export PYTHONPATH="$PYTHONPATH:/opt/conda/lib/python2.7/site-packages"
+GATK="/gatk/gatk"
 
 # Set defaults
 OUTD="./output"
 OUTVCF="final.SV.WGS.vcf"
-CPU="4"
-
-## Load the conda environment. this is done in Dockerfile
-#if [ -z "$CONDA_DEFAULT_ENV" ]; then
-#    source /opt/conda/bin/activate base
-#fi
-
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":vdo:c:f:C:R:" opt; do
+while getopts ":hdC:R:S:L:l:o:" opt; do
   case $opt in
-    v)  # binary argument
-      VERBOSE=1
-      >&2 echo "Verbose output"
+    h)
+      echo "$USAGE"
+      exit 0
       ;;
     d)  # binary argument
       DRYRUN=1
       ;;
-    o) # value argument
-      OUTD=$OPTARG
-      >&2 echo "Output directory: $OUTD "
-      ;;
-    c) # value argument
-      CPU=$OPTARG
-      >&2 echo "CPU: $CPU "
-      ;;
-    f) # value argument
-      OUTVCF=$OPTARG
-      >&2 echo "Output VCF filename: $OUTVCF "
-      ;;
     C) # value argument
-      CONFIG_ARGS="$OPTARG"
-    >&2 echo DEBUG: CONFIG_ARGS = $CONFIG_ARGS
+      HC_ARGS="$HC_ARGS $OPTARG"
       ;;
     R) # value argument
-      RUN_ARGS="$OPTARG"
+      SV_SNP_ARGS="$SV_SNP_ARGS $OPTARG"
+      ;;
+    S) # value argument
+      SV_INDEL_ARGS="$SV_INDEL_ARGS $OPTARG"
+      ;;
+    L) # value argument
+      INPUT_INTERVAL="$OPTARG"
+      ;;
+    l) # value argument
+      INTERVAL_LABEL="$OPTARG"
+      ;;
+    o) # value argument
+      OUTD=$OPTARG
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
+      >&2 echo "$USAGE"
       exit 1
       ;;
     :)
       >&2 echo "Option -$OPTARG requires an argument."
+      >&2 echo "$USAGE"
       exit 1
       ;;
   esac
 done
 shift $((OPTIND-1))
 
-function test_exit_status {
-    # Evaluate return value for chain of pipes; see https://stackoverflow.com/questions/90418/exit-shell-script-based-on-process-exit-code
-    rcs=${PIPESTATUS[*]};
-    for rc in ${rcs}; do
-        if [[ $rc != 0 ]]; then
-            >&2 echo Fatal error.  Exiting.
-            exit $rc;
-        fi;
-    done
-}
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 2 ]; then
     >&2 echo Error: Wrong number of arguments
+    >&2 echo "$USAGE"
     exit 1
 fi
 
-TUMOR=$1
-NORMAL=$2
-REF=$3
+REF=$1
+BAM=$2
 
-# uncompress REF if necessary.  This would typically be used just for test data
-if [[ ! -e $REF && -e "$REF.tar.bz2" ]]; then
-    echo Uncompressing "$REF.tar.bz2"
-    D=$(dirname $REF)
-    tar -xvjf "$REF.tar.bz2" -C $D
-fi
+confirm $BAM
+confirm $REF
 
-
-if [ ! -e $TUMOR ]; then
-    >&2 echo Error: tumor does not exist: $TUMOR
-    exit 1
-fi
-if [ ! -e $NORMAL ]; then
-    >&2 echo Error: normal does not exist: $NORMAL
-    exit 1
-fi
-if [ ! -e $REF ]; then
-    >&2 echo Error: reference does not exist: $REF
-    exit 1
-fi
-
-# First configure manta
-CMD="$PYTHON $MANTAD/configManta.py --tumorBam $TUMOR --normalBam $NORMAL --referenceFasta $REF --runDir $OUTD $CONFIG_ARGS"
-if [ "$DRYRUN" ]; then
-	>&2 echo Dryrun: $CMD
+# IX forms part of suffix of output filename
+# If INTERVAL_LABEL is given, IX takes that value
+# otherwise, get value from INPUT_INTERVAL
+if [ "$INTERVAL_LABEL" ]; then
+    IX="$INTERVAL_LABEL"
 else
-	>&2 echo Running: $CMD
-	eval $CMD
-	test_exit_status
-	>&2 echo configManta.py success.
+    IX="$INPUT_INTERVAL"
 fi
 
-# now run manta
-CMD="$PYTHON $OUTD/runWorkflow.py -m local -j $CPU $RUN_ARGS"
-if [ "$DRYRUN" ]; then
-	>&2 echo Dryrun: $CMD
-else
-	>&2 echo Running: $CMD
-	eval $CMD
-	test_exit_status
-	>&2 echo runWorkflow.py success.
+if [ "$INPUT_INTERVAL" ]; then
+    HC_ARGS="$HC_ARGS -L $INPUT_INTERVAL"
 fi
 
-# VCF below is generated by manta
-VCF="$OUTD/results/variants/somaticSV.vcf.gz"
-# We place output file in the same directory as manta output
-OVCF="$OUTD/results/variants/$OUTVCF"
+mkdir -p $OUTD
+test_exit_status
 
-CMD="$PYTHON /usr/local/somatic_sv_workflow/src/filter_vcf.py $VCF $OVCF"
-if [ "$DRYRUN" ]; then
-	>&2 echo Dryrun: $CMD
-else
-	>&2 echo Running: $CMD
-	eval $CMD
-	test_exit_status
-	>&2 echo filter_vcf.py success.
-fi
+# Run HaplotypeCaller
+OUT1="$OUTD/GATK.raw.${IX}.vcf"
+CMD1="$GATK HaplotypeCaller -R $REF -I $BAM -O $OUT1 $HC_ARGS"
+run_cmd $CMD1
 
->&2 echo Written to $OVCF
->&2 echo process_sample.sh success.
+# Run SelectVariants
+OUT2A="$OUTD/GATK.snp.${IX}.vcf"
+OUT2B="$OUTD/GATK.indel.${IX}.vcf"
+CMD1A="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type SNP -select-type MNP $SV_SNP_ARGS"
+CMD1B="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type INDEL $SV_INDEL_ARGS"
+run_cmd $CMD2A
+run_cmd $CMD2B
+
+>&2 echo Written to $CMD2A and $CMD2B
+>&2 echo $SCRIPT success.

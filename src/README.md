@@ -1,13 +1,9 @@
 # Development notes
 
-based on analysis here:
-/gscuser/mwyczalk/projects/TinDaisy/CromwellRunner/adhoc-test/20191226.heiman
+process_samples.sh based on https://github.com/ding-lab/somatic_sv_workflow
 
-Implementation modeled after:
-/gscuser/mwyczalk/projects/TinDaisy/TinDaisy-Core/src/vcf_filters/merge_filter.py
-
-pyvcf code can be found on image here: /usr/local/lib/python3.8/site-packages/vcf
-
-
+process_samples_parallel: based on 
+    https://github.com/ding-lab/TinDaisy-Core.git
+    src/run_pindel_parallel.sh
 
 
