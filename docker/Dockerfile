@@ -9,4 +9,6 @@ RUN apt-get update && apt-get install -y \
     parallel \
     vim-tiny
 
+RUN conda install -c bioconda bcftools
+
 COPY . /opt/GATK_GermlineCaller
