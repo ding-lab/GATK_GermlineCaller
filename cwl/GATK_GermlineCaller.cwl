@@ -12,6 +12,7 @@ inputs:
     label: Reference FASTA
     secondaryFiles:
       - .fai
+      - ^.dict
   - id: bam
     type: File
     inputBinding:
