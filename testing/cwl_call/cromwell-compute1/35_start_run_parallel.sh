@@ -16,4 +16,3 @@ CONFIG="-Dconfig.file=dat/cromwell-config-db.dat"
 
 /usr/bin/java $ARGS $CONFIG $DB_ARGS -jar $CROMWELL_JAR run -t cwl -i $YAML $CWL
 
-# Could not localize /home/m.wyczalkowski/Projects/TinDaisy/TinDaisy/demo/demo/MutectDemo/demo-data/G15512.HCC1954.1.COST16011_region.bam -> /data/Active/cromwell-data/cromwell-wor
