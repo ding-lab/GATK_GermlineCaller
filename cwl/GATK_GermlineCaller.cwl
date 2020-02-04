@@ -1,6 +1,6 @@
 class: CommandLineTool
 cwlVersion: v1.0
-id: somatic_sv_workflow
+id: GATK_GermlineCaller
 baseCommand:
   - /bin/bash
   - /opt/GATK_GermlineCaller/src/process_sample_parallel.sh
