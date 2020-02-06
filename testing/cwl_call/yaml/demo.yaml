@@ -1,8 +1,8 @@
 bam:
   class: File
-  path: ../demo_data/HCC1954.NORMAL.30x.compare.COST16011_region.bam
+  path: ../../demo_data/HCC1954.NORMAL.30x.compare.COST16011_region.bam
 reference:
   class: File
-  path: ../demo_data/Homo_sapiens_assembly19.COST16011_region.fa
+  path: ../../demo_data/Homo_sapiens_assembly19.COST16011_region.fa
 HC_ARGS: "--standard-min-confidence-threshold-for-calling 30.0"
 dryrun: false
