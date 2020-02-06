@@ -76,7 +76,7 @@ outputs:
 label: GATK_GermlineCaller
 requirements:
   - class: ResourceRequirement
-    ramMin: 8000
+    ramMin: 12000
   - class: DockerRequirement
     dockerPull: mwyczalkowski/gatk_germlinecaller
   - class: InlineJavascriptRequirement
