@@ -22,6 +22,7 @@ Options:
 -j JOBS: if parallel run, number of jobs to run at any one time.  If 0, run sequentially.  Default: 4
 -o OUTD: set output root directory.  Default ./output
 -F : finalize run by compressing per-region output and logs
+-I: Index output files.  Note that the VCF files will be compressed, end in .gz
 
 The following arguments are passed to process_sample.sh directly:
 -C HC_ARGS : pass args to `gatk HaplotypeCaller`
