@@ -45,7 +45,14 @@ inputs:
       position: 0
       prefix: '-F'
     label: finalize
-    doc: 'Compress intermediate data and logs'
+    doc: 'Compress intermediate data and logs, remove raw VCF'
+  - id: compress_output
+    type: boolean?
+    inputBinding:
+      position: 0
+      prefix: '-I'
+    label: Compress output
+    doc: 'Compress and index output VCF files'
   - id: HC_ARGS
     type: string?
     inputBinding:
@@ -68,11 +75,11 @@ outputs:
   - id: snp_vcf
     type: File?
     outputBinding:
-      glob: output/GATK.snp.Final.vcf
+      glob: ${if (inputs.compress_output ) {return "output/GATK.snp.Final.vcf.gz" } else {return "output/GATK.snp.Final.vcf"}}
   - id: indel_vcf
     type: File?
     outputBinding:
-      glob: output/GATK.indel.Final.vcf
+      glob: ${if (inputs.compress_output ) {return "output/GATK.indel.Final.vcf.gz" } else {return "output/GATK.indel.Final.vcf"}}
 label: GATK_GermlineCaller
 requirements:
   - class: ResourceRequirement
