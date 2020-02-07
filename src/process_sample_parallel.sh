@@ -12,7 +12,9 @@ Usage:
 
 Output: 
     OUTD/GATK.snp.Final.vcf
+    OUTD/GATK.snp.Final.vcf.idx
     OUTD/GATK.indel.Final.vcf
+    OUTD/GATK.indel.Final.vcf.idx
 
 Options:
 -h : print usage information
@@ -21,8 +23,9 @@ Options:
 -c CHRLIST: File listing genomic intervals over which to operate
 -j JOBS: if parallel run, number of jobs to run at any one time.  If 0, run sequentially.  Default: 4
 -o OUTD: set output root directory.  Default ./output
--F : finalize run by compressing per-region output and logs
--I: Index output files.  Note that the VCF files will be compressed, end in .gz
+-F : finalize run by compressing per-region output and logs and deleting raw VCF file
+-I: Compress and index output files.  Original VCF files and their .idx index will be removed,
+    VCF.gz and VCF.gz.csi will remain
 
 The following arguments are passed to process_sample.sh directly:
 -C HC_ARGS : pass args to `gatk HaplotypeCaller`
@@ -66,9 +69,10 @@ DO_PARALLEL=0
 OUTD="./output"
 PROCESS="/opt/GATK_GermlineCaller/src/process_sample.sh"
 BCFTOOLS="/opt/miniconda/bin/bcftools"
+BGZIP="/usr/bin/bgzip"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hd1c:j:o:C:R:S:F" opt; do
+while getopts ":hd1c:j:o:C:R:S:FI" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -102,6 +106,10 @@ while getopts ":hd1c:j:o:C:R:S:F" opt; do
       ;;
     F) 
       FINALIZE=1
+      PS_ARGS="$PS_ARGS -F" 
+      ;;
+    I) 
+      DO_INDEX=1
       ;;
     \?)
       >&2 echo "$SCRIPT: ERROR: Invalid option: -$OPTARG"
@@ -204,6 +212,9 @@ if [ $DO_PARALLEL == 1 ]; then
     run_cmd "$CMD" $DRYRUN
 fi
 
+    OUT_SNP="$OUTD/GATK.snp.Final.vcf"
+    OUT_INDEL="$OUTD/GATK.indel.Final.vcf"
+
 # Now merge if we are looping over regions in CHRLIST
 # Merged output will have same filename as if CHR were "Final"
 # testing for globs from https://stackoverflow.com/questions/2937407/test-whether-a-glob-has-any-matches-in-bash
@@ -213,10 +224,9 @@ if [ ! "$NO_CHRLIST" ]; then
     PATTERN="$OUTDR/GATK.snp.*.vcf"
     if stat -t $PATTERN >/dev/null 2>&1; then
         IN=`ls $PATTERN`
-        OUT="$OUTD/GATK.snp.Final.vcf"
-        CMD="$BCFTOOLS concat -o $OUT $IN"
+        CMD="$BCFTOOLS concat -o $OUT_SNP $IN"
         run_cmd "$CMD" $DRYRUN
-        >&2 echo Final SNP output : $OUT
+        >&2 echo Final SNP output : $OUT_SNP
     else
         >&2 echo $SCRIPT : snp merge: no output found matching $PATTERN
     fi
@@ -225,13 +235,23 @@ if [ ! "$NO_CHRLIST" ]; then
     PATTERN="$OUTDR/GATK.indel.*.vcf"
     if stat -t $PATTERN >/dev/null 2>&1; then
         IN=`ls $PATTERN`
-        OUT="$OUTD/GATK.indel.Final.vcf"
-        CMD="$BCFTOOLS concat -o $OUT $IN"
+        CMD="$BCFTOOLS concat -o $OUT_INDEL $IN"
         run_cmd "$CMD" $DRYRUN
-        >&2 echo Final INDEL output : $OUT
+        >&2 echo Final INDEL output : $OUT_INDEL
     else
         >&2 echo $SCRIPT : indel merge: no output found matching $PATTERN
     fi
+fi
+
+# compress and index output files, remove originals and their idx
+if [ $DO_INDEX ]; then
+    >&2 echo Compressing and indexing $OUT_SNP and $OUT_INDEL
+    CMD="$BGZIP $OUT_SNP && $BCFTOOLS index $OUT_SNP.gz && rm -f $OUT_SNP $OUT_SNP.idx"
+    run_cmd "$CMD" $DRYRUN
+    CMD="$BGZIP $OUT_INDEL && $BCFTOOLS index $OUT_INDEL.gz && rm -f $OUT_INDEL $OUT_INDEL.idx"
+    run_cmd "$CMD" $DRYRUN
+    OUT_SNP="$OUT_SNP.gz"
+    OUT_INDEL="$OUT_INDEL.gz"
 fi
 
 if [[ "$FINALIZE" ]] ; then
@@ -258,6 +278,8 @@ if [[ "$FINALIZE" ]] ; then
             >&2 echo Intermediate output in $OUTDR is compressed as $TAR and deleted
         fi
     fi
+
+
 fi
 
 

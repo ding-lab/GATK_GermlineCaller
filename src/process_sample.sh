@@ -15,6 +15,7 @@ Options:
   This is passed verbatim to HaplotypeCaller -L INPUT_INTERVAL
 -l INTERVAL_LABEL : A short label for interval, used for filenames.  Default is INPUT_INTERVAL
 -o OUTD : Output directory [ ./output ]
+-F : Remove GATK.raw.XXX.vcf and .vcf.idx
 
 Output filenames:
     OUTD/GATK.snp.XXX.vcf
@@ -35,7 +36,7 @@ OUTD="./output"
 OUTVCF="final.SV.WGS.vcf"
 
 # http://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":hdC:R:S:L:l:o:" opt; do
+while getopts ":hdC:R:S:L:l:o:F" opt; do
   case $opt in
     h)
       echo "$USAGE"
@@ -61,6 +62,9 @@ while getopts ":hdC:R:S:L:l:o:" opt; do
       ;;
     o) # value argument
       OUTD=$OPTARG
+      ;;
+    F) 
+      FINALIZE=1
       ;;
     \?)
       >&2 echo "Invalid option: -$OPTARG"
@@ -117,6 +121,11 @@ CMD2A="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2A -select-type SNP -select-
 CMD2B="$GATK SelectVariants -R $REF -V $OUT1 -O $OUT2B -select-type INDEL $SV_INDEL_ARGS"
 run_cmd "$CMD2A" $DRYRUN
 run_cmd "$CMD2B" $DRYRUN
+
+if [[ "$FINALIZE" ]] ; then
+    CMD="rm -f $OUT1 $OUT1.idx"
+    run_cmd "$CMD" $DRYRUN
+fi
 
 >&2 echo $SCRIPT success.
 >&2 echo Written SNP to $OUT2A 

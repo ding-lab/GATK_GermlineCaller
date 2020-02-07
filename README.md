@@ -33,6 +33,10 @@ Pipeline can be called in 3 contexts:
 ## Production
 
 Setting `finalize` parameter to `true` will compress all intermediate files and logs
+It also deletes intermediate raw vcf file
+Setting `do_index` to true will compress output VCF files and create .csi index,
+  and also remove the original (uncompressed) .vcf and .vcf.idx files
+For production runs setting both to true is recommended
 
 ## Parameters
 
