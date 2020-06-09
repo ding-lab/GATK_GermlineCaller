@@ -16,6 +16,10 @@ For multiple regions (specified by -c CHRLIST), calls are like,
   bcftools concat -o GATK.snp.Final.vcf
   bcftools concat -o GATK.indel.Final.vcf
 
+## CWL 
+
+IMAGE="mwyczalkowski/gatk_germlinecaller:20200608"
+
 ## CHRLIST
 
 CHRLIST is a file which can take arbitrary genomic regions in a format accepted by GATK HaplotypeCaller.

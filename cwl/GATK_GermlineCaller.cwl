@@ -85,5 +85,5 @@ requirements:
   - class: ResourceRequirement
     ramMin: 12000
   - class: DockerRequirement
-    dockerPull: mwyczalkowski/gatk_germlinecaller
+    dockerPull: 'mwyczalkowski/gatk_germlinecaller:20200608'
   - class: InlineJavascriptRequirement
