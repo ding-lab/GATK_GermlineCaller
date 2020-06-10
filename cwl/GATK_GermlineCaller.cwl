@@ -13,24 +13,25 @@ inputs:
     secondaryFiles:
       - .fai
       - ^.dict
-  - id: bam
+  - id: bam     # CRAM support untested
     type: File
     inputBinding:
       position: 2
-    label: Input BAM/CRAM
+    label: Input BAM
     secondaryFiles: ${if (self.nameext === ".bam") {return self.basename + ".bai"} else {return self.basename + ".crai"}}
   - id: chrlist
     type: File?
     inputBinding:
       position: 0
       prefix: '-c'
-    label: List of genomic regions
+    doc: List of genomic regions
+    label: Genomic regions
   - id: njobs
     type: int?
     inputBinding:
       position: 0
       prefix: '-j'
-    label: Parallel job count
+    label: N parallel jobs
     doc: 'Number of jobs to run in parallel mode'
   - id: dryrun
     type: boolean?
@@ -58,19 +59,22 @@ inputs:
     inputBinding:
       position: 0
       prefix: '-C'
-    label: GATK HaplotypeCaller arguments
+    label: HaplotypeCaller args
+    doc: GATK HaplotypeCaller arguments
   - id: SV_SNP_ARGS
     type: string?
     inputBinding:
       position: 0
       prefix: '-R'
-    label: SelectVariants SNP arguments
+    label: SelectVariants SNP args
+    doc: SelectVariants SNP arguments
   - id: SV_INDEL_ARGS
     type: string?
     inputBinding:
       position: 0
       prefix: '-S'
-    label: SelectVariants INDEL arguments
+    doc: SelectVariants INDEL arguments
+    label: SelectVariants INDEL args
 outputs:
   - id: snp_vcf
     type: File?
